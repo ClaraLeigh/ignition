@@ -136,6 +136,7 @@ class OpenAiSolution implements Solution
     {
         return new OpenAiPromptViewModel(
             file: $this->throwable->getFile(),
+            trace: $this->throwable->getTrace(),
             exceptionMessage: $this->throwable->getMessage(),
             exceptionClass: get_class($this->throwable),
             snippet: $this->getApplicationFrame($this->throwable)->getSnippetAsString(15),
