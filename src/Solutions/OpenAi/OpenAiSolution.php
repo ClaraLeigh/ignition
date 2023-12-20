@@ -22,6 +22,7 @@ class OpenAiSolution implements Solution
     public function __construct(
         protected Throwable           $throwable,
         protected string              $openAiKey,
+        protected string              $openAiModel,
         protected CacheInterface|null $cache = null,
         protected int|null            $cacheTtlInSeconds = 60,
         protected string|null         $applicationType = null,
@@ -97,7 +98,7 @@ class OpenAiSolution implements Solution
 
     protected function getModel(): string
     {
-        return 'gpt-3.5-turbo';
+        return $this->openAiModel ?? 'gpt-3.5-turbo';
     }
 
     protected function getApplicationFrame(Throwable $throwable): ?Frame

@@ -10,6 +10,7 @@ class OpenAiSolutionProvider implements HasSolutionsForThrowable
 {
     public function __construct(
         protected string $openAiKey,
+        protected string $openAiModel,
         protected ?CacheInterface $cache = null,
         protected int $cacheTtlInSeconds = 60 * 60,
         protected string|null $applicationType = null,
@@ -27,12 +28,13 @@ class OpenAiSolutionProvider implements HasSolutionsForThrowable
     {
         return [
             new OpenAiSolution(
-                $throwable,
-                $this->openAiKey,
-                $this->cache,
-                $this->cacheTtlInSeconds,
-                $this->applicationType,
-                $this->applicationPath,
+                throwable: $throwable,
+                openAiKey: $this->openAiKey,
+                openAiModel: $this->openAiModel,
+                cache: $this->cache,
+                cacheTtlInSeconds: $this->cacheTtlInSeconds,
+                applicationType: $this->applicationType,
+                applicationPath: $this->applicationPath,
             ),
         ];
     }

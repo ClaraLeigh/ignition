@@ -18,6 +18,7 @@ it('can solve an an exception using ai', function () {
 
     $solutionProvider = new OpenAiSolutionProvider(
         env('OPEN_API_KEY'),
+        env('OPEN_API_MODEL'),
         $repository,
     );
 
