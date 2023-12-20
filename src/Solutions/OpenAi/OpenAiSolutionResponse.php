@@ -13,12 +13,12 @@ class OpenAiSolutionResponse
 
     public function description(): string
     {
-        return $this->between('FIX', 'ENDFIX', $this->rawText);
+        return $this->between('START_FIX', 'END_FIX', $this->rawText);
     }
 
     public function links(): array
     {
-        $textLinks = $this->between('LINKS', 'ENDLINKS', $this->rawText);
+        $textLinks = $this->between('START_JSON_LINKS', 'END_JSON_LINKS', $this->rawText);
 
         $textLinks = explode(PHP_EOL, $textLinks);
 

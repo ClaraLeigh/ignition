@@ -15,7 +15,11 @@ class OpenAiSolution implements Solution
 {
     public bool $aiGenerated = true;
 
+    protected string $systemPrompt;
+
     protected string $prompt;
+
+    protected OpenAiPromptViewModel $promptViewModel;
 
     protected OpenAiSolutionResponse $openAiSolutionResponse;
 
@@ -28,7 +32,9 @@ class OpenAiSolution implements Solution
         protected string|null         $applicationType = null,
         protected string|null         $applicationPath = null,
     ) {
+        $this->promptViewModel = $this->getPromptViewModel();
         $this->prompt = $this->generatePrompt();
+        $this->systemPrompt = $this->generateSystemPrompt();
 
         $this->openAiSolutionResponse = $this->getAiSolution();
     }
@@ -60,8 +66,11 @@ class OpenAiSolution implements Solution
             ->chat()
             ->create([
                 'model' => $this->getModel(),
-                'messages' => [['role' => 'user', 'content' => $this->prompt]],
-                'max_tokens' => 1000,
+                'messages' => [
+                    ['role' => 'system', 'content' => $this->systemPrompt],
+                    ['role' => 'user', 'content' => $this->prompt]
+                ],
+                'max_tokens' => $this->maxTokens(),
                 'temperature' => 0,
             ])->choices[0]->message->content;
 
@@ -81,17 +90,18 @@ class OpenAiSolution implements Solution
     {
         $viewPath = Ignition::viewPath('aiPrompt');
 
-        $viewModel = new OpenAiPromptViewModel(
-            file: $this->throwable->getFile(),
-            exceptionMessage: $this->throwable->getMessage(),
-            exceptionClass: get_class($this->throwable),
-            snippet: $this->getApplicationFrame($this->throwable)->getSnippetAsString(15),
-            line: $this->throwable->getLine(),
-            applicationType: $this->applicationType,
+        return (new Renderer())->renderAsString(
+            ['viewModel' => $this->promptViewModel],
+            $viewPath,
         );
+    }
+
+    protected function generateSystemPrompt(): string
+    {
+        $viewPath = Ignition::viewPath('aiSystemPrompt');
 
         return (new Renderer())->renderAsString(
-            ['viewModel' => $viewModel],
+            ['viewModel' => $this->promptViewModel],
             $viewPath,
         );
     }
@@ -99,6 +109,11 @@ class OpenAiSolution implements Solution
     protected function getModel(): string
     {
         return $this->openAiModel ?? 'gpt-3.5-turbo';
+    }
+
+    protected function maxTokens(): int
+    {
+        return 1000;
     }
 
     protected function getApplicationFrame(Throwable $throwable): ?Frame
@@ -112,5 +127,20 @@ class OpenAiSolution implements Solution
         $frames = $backtrace->frames();
 
         return $frames[$backtrace->firstApplicationFrameIndex()] ?? null;
+    }
+
+    /**
+     * @return OpenAiPromptViewModel
+     */
+    protected function getPromptViewModel(): OpenAiPromptViewModel
+    {
+        return new OpenAiPromptViewModel(
+            file: $this->throwable->getFile(),
+            exceptionMessage: $this->throwable->getMessage(),
+            exceptionClass: get_class($this->throwable),
+            snippet: $this->getApplicationFrame($this->throwable)->getSnippetAsString(15),
+            line: $this->throwable->getLine(),
+            applicationType: $this->applicationType,
+        );
     }
 }
